@@ -1,0 +1,39 @@
+# Define the DllImport for InternetCheckConnectionW
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class WinInet
+{
+    // Import InternetCheckConnectionW from wininet.dll
+    [DllImport("wininet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern bool InternetCheckConnection(string lpszUrl, int dwFlags, int dwReserved);
+
+    // Import InternetGetConnectedState from wininet.dll
+    [DllImport("wininet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern bool InternetGetConnectedState(out int lpdwFlags, int dwReserved);
+}
+"@
+
+# Constants for InternetCheckConnection
+$FLAG_ICC_FORCE_CONNECTION = 1
+
+# Check internet connection state
+$lpdwFlags = 0
+$connectionState = [WinInet]::InternetGetConnectedState([ref]$lpdwFlags, 0)
+
+if ($connectionState) {
+    Write-Host "Internet is connected"
+} else {
+    Write-Host "Internet is not connected"
+}
+
+# Check specific URL connectivity
+$url = "https://www.google.com"
+$checkConnection = [WinInet]::InternetCheckConnection($url, $FLAG_ICC_FORCE_CONNECTION, 0)
+
+if ($checkConnection) {
+    Write-Host "Successfully connected to $url"
+} else {
+    Write-Host "Failed to connect to $url"
+}
